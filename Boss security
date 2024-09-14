@@ -1,0 +1,82 @@
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("Bem-vindo ao Sistema de Monitoramento de Segurança Digital!");
+        Monitoramento monitoramento = new Monitoramento();
+        monitoramento.iniciarMonitoramento();
+    }
+}
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.util.List;
+
+public class Monitoramento {
+    private Logger logger;
+
+    public Monitoramento() {
+        this.logger = new Logger();
+    }
+
+    public void iniciarMonitoramento() {
+        verificarPortasAbertas();
+        monitorarProcessos();
+    }
+
+    private void verificarPortasAbertas() {
+        int[] portas = {80, 443, 8080};
+        for (int porta : portas) {
+            if (isPortOpen("localhost", porta, 200)) {
+                logger.log("Porta " + porta + " está aberta.");
+            } else {
+                logger.log("Porta " + porta + " está fechada.");
+            }
+        }
+    }
+
+    private boolean isPortOpen(String ip, int porta, int timeout) {
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress(ip, porta), timeout);
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    private void monitorarProcessos() {
+        List<String> processos = Processos.getProcessos();
+        for (String processo : processos) {
+            logger.log("Processo ativo: " + processo);
+        }
+    }
+}
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+public class Logger {
+    private static final String LOG_FILE = "log.txt";
+
+    public void log(String mensagem) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(LOG_FILE, true))) {
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            writer.println(timestamp + " - " + mensagem);
+        } catch (IOException e) {
+            System.err.println("Erro ao escrever no log: " + e.getMessage());
+        }
+    }
+}
+import java.util.ArrayList;
+import java.util.List;
+
+public class Processos {
+    public static List<String> getProcessos() {
+        // Simulação de processos ativos
+        List<String> processos = new ArrayList<>();
+        processos.add("java.exe");
+        processos.add("chrome.exe");
+        processos.add("explorer.exe");
+        return processos;
+    }
+}
